@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>رحلة القيم الإيجابية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: { royal: '#064E3B', royal2: '#065F46', ink: '#022C22', gold: '#D97706', gold2: '#F59E0B', cream: '#F9F8F3' },
+        fontFamily: { sans: ['Cairo', 'Tajawal', 'sans-serif'] }
+      }
+    }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+<script>
+/* ============================================================================
+   📝 كائن البيانات — عدّل كل النصوص من هنا
+   - اسم المدرسة، المشرفون، بيانات الرحلة
+   - القيم: أضف/عدّل قيمة بنسخ أي عنصر داخل values وتغيير محتواه
+   - القصة: لكل شريحة إمّا scene (رسم جاهز: messy | tools | clean)
+            أو emoji (رمز تعبيري كبير) أو image (رابط صورة)
+   ============================================================================ */
+const APP_DATA = {
+  school: {
+    name: "الابتدائية الثانية بسنابس",
+    subtitle: "برنامج غرس القيم الإيجابية"
+  },
+  supervisorTitle: "الموجهة الطلابية",
+  supervisors: ["أ. نرجس المزين"],
+  flight: {
+    number: "RQ1447",
+    destination: "رحلة القيم الإيجابية",
+    status: "الصعود الآن",
+    from: "المدرسة",
+    gate: "A7",
+    seatClass: "الدرجة الأولى",
+    boardingTime: "07:30"
+  },
+  // أرقام بدء اختيارية تُضاف إلى الإحصائيات (مثلاً من أجهزة أخرى)
+  seedStats: { passports: 0, wall: 0, familyStamps: 0 },
+
+  ratingScale: [
+    { score: 4, label: "دائماً", emoji: "🌟" },
+    { score: 3, label: "غالباً", emoji: "😊" },
+    { score: 2, label: "أحياناً", emoji: "🙂" },
+    { score: 1, label: "نادراً", emoji: "😐" }
+  ],
+
+  values: [
+    {
+      id: "belonging", title: "الانتماء للوطن", icon: "🌴", color: "#064E3B",
+      tagline: "وطني بيتي الكبير، أحميه وأبنيه",
+      assessment: [
+        "أحافظ على الممتلكات العامة في مدرستي وحيّي",
+        "أعتز بهويتي ورموز وطني وأتحدث عنها بفخر",
+        "أشارك في الأعمال التطوعية التي تخدم مجتمعي"
+      ],
+      cards: {
+        meaning: "الانتماء للوطن شعورٌ بالحب والولاء والاعتزاز بالوطن، يظهر في المحافظة على مقدّراته، والمشاركة في بنائه، واحترام أنظمته، والحرص على سمعته.",
+        religion: { text: "«ما أطيبَكِ من بلدٍ وأحبَّكِ إليَّ، ولولا أنَّ قومي أخرجوني منكِ ما سكنتُ غيرَكِ»", source: "قاله النبي ﷺ عن مكة المكرمة — رواه الترمذي" },
+        behaviors: [
+          "أحافظ على نظافة مدرستي وممتلكاتها كأنها بيتي",
+          "أحترم الأنظمة وأقف احتراماً للنشيد الوطني",
+          "أتطوع في المبادرات التي تخدم حيّي ومجتمعي"
+        ],
+        example: "رأيتُ صنبور ماء مفتوحاً في المدرسة، فأغلقته فوراً وأبلغت المشرف عن التسرّب؛ لأن الماء ثروة وطني."
+      },
+      story: [
+        { scene: "messy", title: "ساحةٌ تنتظر من يحبها", text: "في صباح أحد الأيام، لاحظ طلبة الصف أن ساحة المدرسة امتلأت بالأوراق والعلب الفارغة، وذبلت أشجارها، وصار الجميع يمرّ بجانبها دون أن يفعل شيئاً." },
+        { scene: "tools", title: "فكرةٌ تتحوّل إلى مبادرة", text: "اجتمع الطلبة مع مشرفهم وأطلقوا مبادرة «ساحتنا أجمل»؛ جمعوا أدوات التنظيف والقفازات، وأحضروا شتلات صغيرة، ووزّعوا المهام بينهم بحماس." },
+        { scene: "clean", title: "أثرٌ يراه الجميع", text: "بعد أسبوع من العمل الجماعي صارت الساحة نظيفة ومزهرة، وأصبح الطلبة يحافظون عليها بأنفسهم. تعلّم الجميع أن حب الوطن يبدأ من المكان الذي نقف فيه." }
+      ],
+      simulation: {
+        question: "لو كنت مكانهم... ماذا ستفعل لتحافظ على ساحة مدرستك؟",
+        options: [
+          "أشارك زملائي في حملة تنظيف وتشجير الساحة",
+          "أضع النفايات في مكانها وأنصح من حولي بذلك",
+          "أقترح على إدارة المدرسة لوحات توعوية وحاويات فرز",
+          "أتطوع لسقي الشتلات ومتابعتها أسبوعياً"
+        ]
+      }
+    },
+    {
+      id: "tolerance", title: "التسامح", icon: "🕊️", color: "#0E7490",
+      tagline: "قلبٌ واسع يجمع ولا يفرّق",
+      assessment: [
+        "أعفو عن زميلي إذا أخطأ في حقي واعتذر",
+        "أتقبّل اختلاف الآخرين في الرأي والطباع",
+        "أبادر بالاعتذار عندما أخطئ"
+      ],
+      cards: {
+        meaning: "التسامح هو العفو عند المقدرة، وتقبّل الآخرين واحترام اختلافهم، وتجاوز الإساءة بنفسٍ طيبة دون حقدٍ أو رغبةٍ في الانتقام.",
+        religion: { text: "﴿وَلْيَعْفُوا وَلْيَصْفَحُوا ۗ أَلَا تُحِبُّونَ أَن يَغْفِرَ اللَّهُ لَكُمْ﴾", source: "سورة النور — الآية 22" },
+        behaviors: [
+          "أقبل اعتذار زميلي وأبدأ معه صفحة جديدة",
+          "أحاور من يخالفني بهدوء واحترام",
+          "لا أسخر من أحد بسبب شكله أو لهجته أو رأيه"
+        ],
+        example: "اصطدم بي زميلي في الطابور فسقطت أدواتي، فاعتذر بسرعة، فابتسمت وقلت: لا بأس، وساعدني في جمعها."
+      },
+      story: [
+        { emoji: "⚽", title: "خلافٌ في الملعب", text: "أثناء مباراة في حصة النشاط اختلف زميلان على هدف، وارتفعت أصواتهما، وانقسم الفريق إلى مجموعتين متخاصمتين." },
+        { emoji: "🤝", title: "خطوةٌ شجاعة", text: "تقدّم أحدهما وقال: «ربما أخطأتُ في الحكم، أنا آسف». فمدّ الآخر يده وقال: «وأنا أعتذر عن صراخي»." },
+        { emoji: "🏆", title: "فريقٌ أقوى", text: "عاد الفريق متماسكاً وفاز في المباراة التالية، وأدرك الجميع أن التسامح يجعل القلوب أقرب والفريق أقوى." }
+      ],
+      simulation: {
+        question: "لو كنت مكانهما... كيف تتصرف عند الخلاف مع زميل؟",
+        options: ["أهدأ وأستمع لوجهة نظره كاملة", "أبادر بالاعتذار إن كنت مخطئاً", "أقبل اعتذاره ولا أذكّره بالخطأ لاحقاً", "أطلب مساعدة المعلم بهدوء إذا لم نتفق"]
+      }
+    },
+    {
+      id: "moderation", title: "الوسطية", icon: "⚖️", color: "#4338CA",
+      tagline: "اعتدالٌ في كل شيء، لا إفراط ولا تفريط",
+      assessment: [
+        "أوازن بين وقت الدراسة واللعب والراحة",
+        "أعبّر عن رأيي باعتدال دون تشدد أو تهاون",
+        "أنفق مصروفي باعتدال دون إسراف أو بخل"
+      ],
+      cards: {
+        meaning: "الوسطية هي الاعتدال والتوازن في الأقوال والأفعال والمواقف، والبعد عن الغلو والتشدد من جهة، وعن التهاون والتفريط من جهة أخرى.",
+        religion: { text: "﴿وَكَذَٰلِكَ جَعَلْنَاكُمْ أُمَّةً وَسَطًا﴾", source: "سورة البقرة — الآية 143" },
+        behaviors: [
+          "أنظّم وقتي بين واجباتي وهواياتي وأسرتي",
+          "أستخدم الأجهزة الذكية بوقت محدد ومعقول",
+          "أحكم على الأمور بإنصاف دون مبالغة"
+        ],
+        example: "خصصت ساعة للألعاب الإلكترونية بعد إنهاء واجباتي، ثم أغلقت الجهاز وجلست مع أسرتي."
+      },
+      story: [
+        { emoji: "📱", title: "شاشةٌ لا تنطفئ", text: "كان أحد الطلبة يقضي ساعات طويلة أمام الألعاب الإلكترونية حتى آخر الليل، فصار يتأخر عن المدرسة ويشعر بالتعب في الحصص." },
+        { emoji: "🗓️", title: "جدولٌ متوازن", text: "اقترح عليه معلّمه تصميم جدول متوازن: وقت للمذاكرة، ووقت للرياضة، ووقت محدد للألعاب، ووقت للأسرة." },
+        { emoji: "😊", title: "حياةٌ أجمل", text: "بعد شهر تحسّنت درجاته ونشاطه، وما زال يستمتع بألعابه لكن في وقتها المناسب. اكتشف أن التوازن سرّ السعادة." }
+      ],
+      simulation: {
+        question: "لو كنت مكانه... كيف تحقق التوازن في يومك؟",
+        options: ["أصمم جدولاً يومياً يوازن بين الدراسة والراحة", "أحدد وقتاً معقولاً للأجهزة الذكية", "أمارس الرياضة بانتظام", "أخصص وقتاً يومياً للجلوس مع أسرتي"]
+      }
+    },
+    {
+      id: "perseverance", title: "المثابرة", icon: "🧗", color: "#B45309",
+      tagline: "خطوةٌ بعد خطوة حتى القمّة",
+      assessment: [
+        "أستمر في حل المسألة الصعبة حتى أصل للحل",
+        "لا أستسلم عندما أحصل على درجة منخفضة",
+        "أكمل المهام التي أبدؤها حتى نهايتها"
+      ],
+      cards: {
+        meaning: "المثابرة هي الاستمرار في العمل وبذل الجهد بصبر رغم الصعوبات والعقبات، حتى تحقيق الهدف دون مللٍ أو استسلام.",
+        religion: { text: "«أحبُّ الأعمالِ إلى اللهِ أدومُها وإن قلَّ»", source: "حديث شريف — متفق عليه" },
+        behaviors: [
+          "أقسّم المهمة الكبيرة إلى خطوات صغيرة",
+          "أتعلم من أخطائي وأحاول من جديد",
+          "أطلب المساعدة عندما أحتاجها ولا أتوقف"
+        ],
+        example: "لم أحفظ جدول الضرب سريعاً، فصرت أراجع جزءاً صغيراً كل يوم حتى أتقنته كله."
+      },
+      story: [
+        { emoji: "📉", title: "درجةٌ مخيّبة", text: "حصل أحد الطلبة على درجة منخفضة في اختبار العلوم، فحزن وفكّر أن يتوقف عن المحاولة، وقال: «العلوم ليست لي»." },
+        { emoji: "📝", title: "خطةٌ جديدة", text: "بدلاً من الاستسلام وضع خطة: يراجع درساً واحداً كل يوم، ويحل تمارين إضافية، ويسأل معلمه عمّا لم يفهمه." },
+        { emoji: "🏅", title: "ثمرة الصبر", text: "في الاختبار التالي حصل على درجة ممتازة، وصار يقول لزملائه: «النجاح ليس ضربة حظ، بل خطوات صغيرة متكررة»." }
+      ],
+      simulation: {
+        question: "لو كنت مكانه... ماذا تفعل بعد نتيجة لم تُرضِك؟",
+        options: ["أراجع أخطائي لأعرف أين أحتاج للتحسين", "أضع خطة مراجعة يومية قصيرة", "أطلب من معلمي شرح ما لم أفهمه", "أشجّع نفسي وأتذكر نجاحاتي السابقة"]
+      }
+    },
+    {
+      id: "mastery", title: "الإتقان", icon: "💎", color: "#9D174D",
+      tagline: "أعمل العمل وكأنه توقيعي",
+      assessment: [
+        "أراجع واجباتي قبل تسليمها",
+        "أهتم بجودة عملي لا بسرعة إنهائه فقط",
+        "أحرص على ترتيب دفاتري وأعمالي"
+      ],
+      cards: {
+        meaning: "الإتقان هو أداء العمل على أكمل وجه وبأعلى جودة ممكنة، بإخلاصٍ ودقةٍ وعنايةٍ بالتفاصيل، سواء رآني الناس أم لم يروني.",
+        religion: { text: "«إنَّ اللهَ يُحبُّ إذا عمِلَ أحدُكم عملاً أن يُتقِنَه»", source: "حديث شريف — رواه البيهقي في شعب الإيمان" },
+        behaviors: [
+          "أقرأ التعليمات جيداً قبل البدء بأي عمل",
+          "أراجع عملي وأصحح أخطائي قبل التسليم",
+          "أبذل أفضل ما لديّ حتى في المهام الصغيرة"
+        ],
+        example: "قبل تسليم مشروع الرسم راجعت الألوان والكتابة، وأعدت تلوين الجزء الذي خرج عن الخط."
+      },
+      story: [
+        { emoji: "⏱️", title: "مشروعٌ على عجل", text: "كُلّفت مجموعة بإعداد مجسّم للمجموعة الشمسية، فأرادوا إنهاءه بسرعة ليذهبوا إلى الفسحة، فجاء المجسّم مائلاً وألوانه غير مرتبة." },
+        { emoji: "🔍", title: "لنصنعه كما يجب", text: "قال قائد المجموعة: «عملنا يحمل أسماءنا». فأعادوا القياس، ورتّبوا الكواكب بأحجامها الصحيحة، وكتبوا بطاقات تعريف واضحة." },
+        { emoji: "🌟", title: "عملٌ يُفتخر به", text: "عُرض مجسّمهم في معرض المدرسة وأُعجب به الزوار، وشعر الفريق بفخرٍ لا تمنحه السرعة، بل يمنحه الإتقان." }
+      ],
+      simulation: {
+        question: "لو كنت في هذه المجموعة... كيف تضمن إتقان العمل؟",
+        options: ["نقرأ المطلوب بدقة قبل البدء", "نوزّع المهام حسب مهارة كل عضو", "نراجع العمل معاً قبل التسليم", "نعيد ما لا يرضينا مهما استغرق من وقت"]
+      }
+    },
+    {
+      id: "discipline", title: "الانضباط", icon: "⏰", color: "#1E3A8A",
+      tagline: "النظام طريق النجاح",
+      assessment: [
+        "أحضر إلى المدرسة في الوقت المحدد",
+        "ألتزم بقواعد الصف وأنظمة المدرسة",
+        "أسلّم واجباتي في موعدها"
+      ],
+      cards: {
+        meaning: "الانضباط هو الالتزام بالأنظمة والتعليمات والمواعيد عن قناعة ذاتية، والتحكم في السلوك بما يحقق النظام ويحترم حقوق الآخرين.",
+        religion: { text: "﴿إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا﴾", source: "سورة النساء — الآية 103" },
+        behaviors: [
+          "أحضر للطابور الصباحي في موعده",
+          "أستأذن قبل الحديث وأحترم دوري",
+          "أرتّب حقيبتي وأدواتي من الليلة السابقة"
+        ],
+        example: "جهّزت حقيبتي وزيّي المدرسي قبل النوم، فوصلت مبكراً ولم أنسَ كتاب الرياضيات."
+      },
+      story: [
+        { emoji: "🏃", title: "صباحٌ مرتبك", text: "كل صباح كان أحد الطلبة يستيقظ متأخراً، فيبحث عن كتبه، ويصل بعد الطابور، ويفوته جزء من الحصة الأولى." },
+        { emoji: "📋", title: "قائمة المساء", text: "نصحته جدّته بقائمة مسائية بسيطة: تجهيز الحقيبة، وتجهيز الزي، وضبط المنبّه، والنوم مبكراً." },
+        { emoji: "🔔", title: "في الموعد تماماً", text: "صار يصل قبل الجرس بدقائق، هادئاً ومستعداً، واختاره معلمه ليكون «قائد الانضباط» في الصف." }
+      ],
+      simulation: {
+        question: "لو كنت مكانه... كيف تنظّم صباحك ويومك؟",
+        options: ["أجهّز أدواتي وحقيبتي في الليلة السابقة", "أنام مبكراً وأضبط المنبّه", "أكتب مواعيد الواجبات في مفكرتي", "ألتزم بقواعد الصف حتى دون مراقبة"]
+      }
+    },
+    {
+      id: "flexibility", title: "المرونة", icon: "🌿", color: "#15803D",
+      tagline: "أتكيّف مع التغيير وأبحث عن الحل",
+      assessment: [
+        "أتقبّل تغيير الخطط دون غضب",
+        "أبحث عن حلول بديلة عندما تواجهني مشكلة",
+        "أتعاون مع زملاء جدد بسهولة"
+      ],
+      cards: {
+        meaning: "المرونة هي القدرة على التكيّف مع المواقف المتغيرة، وتقبّل الآراء المختلفة، والبحث عن البدائل والحلول بهدوء دون جمودٍ أو انفعال.",
+        religion: { text: "«إنَّ الرِّفقَ لا يكونُ في شيءٍ إلا زانَه، ولا يُنزَعُ من شيءٍ إلا شانَه»", source: "حديث شريف — رواه مسلم" },
+        behaviors: [
+          "أهدأ وأفكّر عندما تتغير الخطة",
+          "أستمع لأفكار زملائي وأعدّل رأيي إن اقتنعت",
+          "أحوّل المشكلة إلى فرصة للتعلم"
+        ],
+        example: "أُلغيت الرحلة المدرسية بسبب المطر، فاقترحنا تنظيم مسابقة ثقافية داخل الصف، فاستمتعنا كثيراً."
+      },
+      story: [
+        { emoji: "🌧️", title: "مطرٌ غير متوقع", text: "استعد الصف ليوم رياضي في الساحة، لكن السماء أمطرت بغزارة، فحزن الجميع وقال بعضهم: «ضاع يومنا»." },
+        { emoji: "💡", title: "خطةٌ بديلة", text: "اقترحت إحدى المجموعات نقل الأنشطة إلى الصالة المغلقة، وتحويل السباقات إلى ألعاب ذهنية وتحديات جماعية." },
+        { emoji: "🎉", title: "يومٌ لا يُنسى", text: "كان اليوم ممتعاً بشكل مختلف، وتعلّم الجميع أن الظروف قد تتغير، لكن المرونة تصنع من كل ظرفٍ فرصة." }
+      ],
+      simulation: {
+        question: "لو كنت مكانهم... كيف تتصرف عندما تتغير الخطة فجأة؟",
+        options: ["أتقبّل التغيير وأفكر في بديل", "أشارك زملائي في اقتراح حلول جديدة", "أشجّع من يشعر بالإحباط", "أتعاون في تنفيذ الخطة البديلة بحماس"]
+      }
+    },
+    {
+      id: "positivity", title: "الإيجابية", icon: "☀️", color: "#C2410C",
+      tagline: "أرى الجمال وأصنعه",
+      assessment: [
+        "أبدأ يومي بابتسامة وكلمة طيبة",
+        "أشجّع زملائي وأمدح إنجازاتهم",
+        "أركّز على الحلول لا على الشكوى"
+      ],
+      cards: {
+        meaning: "الإيجابية هي النظرة المتفائلة للحياة، والمبادرة بالخير، والتركيز على الحلول والفرص، ونشر الأمل والطاقة الطيبة فيمن حولنا.",
+        religion: { text: "«تبسُّمُك في وجهِ أخيك لك صدقة»", source: "حديث شريف — رواه الترمذي" },
+        behaviors: [
+          "أبتسم في وجه زملائي ومعلميّ",
+          "أقول كلمة تشجيع لمن يحتاجها",
+          "أبادر بالمساعدة دون أن يُطلب مني"
+        ],
+        example: "رأيت زميلاً جديداً يجلس وحده في الفسحة، فدعوته ليلعب معنا، فأصبح من أعز أصدقائي."
+      },
+      story: [
+        { emoji: "😔", title: "زميلٌ جديد", text: "انتقل طالب جديد إلى الصف، وكان خجولاً يجلس وحيداً في الفسحة، لا يعرف أحداً ولا يتحدث مع أحد." },
+        { emoji: "😊", title: "ابتسامةٌ ودعوة", text: "قرّر بعض الطلبة الترحيب به؛ فابتسموا له، وعرّفوه على المدرسة، ودعوه لمشاركتهم في الأنشطة." },
+        { emoji: "🌈", title: "صفٌّ أسعد", text: "أصبح الطالب الجديد نشيطاً ومحبوباً، وصار هو نفسه يرحّب بكل قادم جديد. الإيجابية عدوى جميلة!" }
+      ],
+      simulation: {
+        question: "لو كنت مكانهم... كيف ترحّب بزميل جديد؟",
+        options: ["أبادر بالتعارف والترحيب به", "أعرّفه على المدرسة وأنظمتها", "أدعوه للمشاركة في اللعب والأنشطة", "أعرّفه على زملائي ليكوّن صداقات"]
+      }
+    },
+    {
+      id: "determination", title: "العزيمة", icon: "🚀", color: "#7C2D12",
+      tagline: "إرادةٌ لا تعرف المستحيل",
+      assessment: [
+        "أضع لنفسي أهدافاً واضحة وأسعى لتحقيقها",
+        "أواصل العمل حتى عندما أشعر بالتعب",
+        "أثق بقدرتي على النجاح"
+      ],
+      cards: {
+        meaning: "العزيمة هي الإرادة القوية والتصميم الصادق على تحقيق الهدف، مع التوكل على الله، وتجاوز العقبات بثقة وشجاعة.",
+        religion: { text: "﴿فَإِذَا عَزَمْتَ فَتَوَكَّلْ عَلَى اللَّهِ﴾", source: "سورة آل عمران — الآية 159" },
+        behaviors: [
+          "أكتب هدفي وأضعه أمام عيني",
+          "أبدأ بالعمل فوراً ولا أؤجّل",
+          "أتذكر سبب بدايتي كلما شعرت بالتعب"
+        ],
+        example: "قررت المشاركة في مسابقة القراءة، فقرأت عشر صفحات يومياً حتى أنهيت خمسة كتب قبل موعدها."
+      },
+      story: [
+        { emoji: "🎯", title: "حلمٌ كبير", text: "أراد فريق من الطلبة المشاركة في مسابقة الروبوت، لكنهم لا يملكون خبرة سابقة، وقال بعضهم: «هذا صعب علينا»." },
+        { emoji: "🛠️", title: "عملٌ متواصل", text: "قرّروا ألا يستسلموا؛ فتعلّموا من مقاطع تعليمية، وتدرّبوا بعد الدوام، وأعادوا بناء الروبوت مرات عديدة." },
+        { emoji: "🚀", title: "لحظة الإنجاز", text: "وصل فريقهم إلى المراكز الأولى، وكتبوا على لوحة الصف: «بالعزيمة والتوكل على الله نحوّل الحلم إلى حقيقة»." }
+      ],
+      simulation: {
+        question: "لو كنت في هذا الفريق... كيف تحوّل حلمك إلى حقيقة؟",
+        options: ["أحدد هدفاً واضحاً وخطة لتحقيقه", "أتعلم ما ينقصني من مهارات", "أتعاون مع فريق يشاركني الحلم", "لا أستسلم عند الفشل وأحاول من جديد"]
+      }
+    }
+  ]
+};
+</script>
+
+<style>
+  :root { --royal:#064E3B; --gold:#D97706; --gold2:#F59E0B; --cream:#F9F8F3; }
+  html, body { font-family: 'Cairo', sans-serif; background: var(--cream); color: #1c2b25; }
+  body { -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+  button { touch-action: manipulation; }
+
+  .fade-up { animation: fadeUp .55s cubic-bezier(.2,.8,.2,1) both; }
+  .fade-in { animation: fadeIn .5s ease both; }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(18px); } to { opacity:1; transform:none; } }
+  @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+  .delay-2 { animation-delay: .16s } .delay-3 { animation-delay: .24s }
+
+  /* ---- صالة المغادرة ---- */
+  .lounge {
+    background:
+      radial-gradient(ellipse 60% 40% at 15% 0%, rgba(245,158,11,.28), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 85% 0%, rgba(245,158,11,.22), transparent 70%),
+      radial-gradient(ellipse 80% 30% at 50% 100%, rgba(245,158,11,.18), transparent 70%),
+      linear-gradient(180deg, #011c15 0%, #03382a 45%, #064E3B 75%, #0a3a2d 100%);
+  }
+  .floor-shine { background: linear-gradient(180deg, transparent, rgba(255,255,255,.04) 40%, rgba(245,158,11,.08)); }
+  .plane-fly { animation: fly 16s linear infinite; }
+  @keyframes fly { 0% { transform: translate(130%, 30px) rotate(-6deg); } 100% { transform: translate(-160vw, -40px) rotate(-6deg); } }
+  .lamp { animation: lamp 4s ease-in-out infinite; }
+  @keyframes lamp { 50% { opacity:.55 } }
+
+  /* ---- لوحة المواعيد ---- */
+  .board { background: linear-gradient(180deg,#0b0f0d,#151a17); }
+  .flap { background:#1f2622; border-radius:4px; padding:2px 8px; box-shadow: inset 0 -1px 0 rgba(255,255,255,.06), inset 0 1px 0 rgba(0,0,0,.6); letter-spacing:.03em; }
+  .blink { animation: blink 1.1s steps(2, start) infinite; }
+  @keyframes blink { to { visibility: hidden; } }
+  .marquee { display:inline-block; animation: marquee 26s linear infinite; white-space: nowrap; }
+  @keyframes marquee { from { transform: translateX(-100vw);} to { transform: translateX(100%);} }
+
+  /* ---- الجواز ---- */
+  .passport-wrap { perspective: 1400px; }
+  .passport-book { position:relative; width: 220px; height: 300px; transform-style: preserve-3d; transition: transform .6s cubic-bezier(.2,.8,.2,1); cursor:pointer; }
+  .passport-wrap:hover .passport-book { transform: rotateY(-14deg) rotateX(6deg) translateY(-6px); }
+  .passport-page, .passport-cover { position:absolute; inset:0; border-radius: 6px 16px 16px 6px; }
+  .passport-page { background: repeating-linear-gradient(0deg,#f6f1e1 0 14px,#efe7cf 14px 15px); border:1px solid #e3d6b0; }
+  .passport-cover {
+    background: radial-gradient(circle at 30% 20%, #0b6b51, #064E3B 55%, #033226);
+    transform-origin: right center; transition: transform 1s cubic-bezier(.6,.05,.3,1);
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,.6), inset 0 0 0 2px rgba(245,158,11,.35), inset -10px 0 18px rgba(0,0,0,.35);
+    backface-visibility: hidden;
+  }
+  .opening .passport-cover { transform: rotateY(-165deg); }
+  .passport-glow { animation: pglow 2.6s ease-in-out infinite; }
+  @keyframes pglow { 0%,100% { filter: drop-shadow(0 0 0 rgba(245,158,11,0)); } 50% { filter: drop-shadow(0 0 28px rgba(245,158,11,.55)); } }
+  .gold-text { background: linear-gradient(180deg,#FDE68A,#F59E0B 50%,#B45309); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .gold-btn { background: linear-gradient(180deg,#F59E0B,#D97706); box-shadow: 0 10px 24px -8px rgba(217,119,6,.7), inset 0 1px 0 rgba(255,255,255,.35); }
+  .gold-btn:hover { filter: brightness(1.07); }
+  .gold-btn:active { transform: translateY(1px); }
+
+  /* ---- التذكرة ---- */
+  .ticket-in { animation: ticketIn 1s cubic-bezier(.2,.9,.2,1) both; transform-origin: top center; }
+  @keyframes ticketIn { from { opacity:0; transform: perspective(900px) translateY(-30px) rotateX(-70deg); } to { opacity:1; transform: none; } }
+  .ticket-stub { border-top: 2px dashed rgba(245,158,11,.4); }
+  @media (min-width: 640px) {
+    .ticket-stub { border-top: 0; border-inline-start: 2px dashed rgba(245,158,11,.45); }
+    .notch::before, .notch::after { content:''; position:absolute; width:20px; height:20px; background: var(--notch-bg, #03382a); border-radius:50%; inset-inline-start: -11px; }
+    .notch::before { top: -10px; } .notch::after { bottom: -10px; }
+  }
+  .barcode { height: 50px; background: repeating-linear-gradient(90deg,#0f172a 0 2px,transparent 2px 4px,#0f172a 4px 5px,transparent 5px 8px,#0f172a 8px 11px,transparent 11px 12px,#0f172a 12px 13px,transparent 13px 16px); background-color:#F9F8F3; }
+
+  /* ---- الإحصائيات ---- */
+  .stat-ring { background: radial-gradient(circle at 50% 35%, #0b6b51, #064E3B 70%); box-shadow: 0 0 0 6px rgba(245,158,11,.15), 0 0 0 1px rgba(245,158,11,.6) inset, 0 18px 40px -12px rgba(6,78,59,.6), 0 0 36px rgba(245,158,11,.28); animation: ringGlow 3s ease-in-out infinite; }
+  @keyframes ringGlow { 50% { box-shadow: 0 0 0 9px rgba(245,158,11,.10), 0 0 0 1px rgba(245,158,11,.8) inset, 0 18px 40px -12px rgba(6,78,59,.6), 0 0 52px rgba(245,158,11,.45); } }
+
+  /* ---- بطاقات القلب ---- */
+  .flip-card { perspective: 1400px; }
+  .flip-inner { position:relative; width:100%; height:100%; transition: transform .75s cubic-bezier(.3,.8,.2,1); transform-style: preserve-3d; }
+  .flip-card.flipped .flip-inner { transform: rotateY(180deg); }
+  .flip-face { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius: 1.5rem; overflow:hidden; }
+  .flip-back { transform: rotateY(180deg); }
+
+  .opt:has(input:checked) { border-color: #D97706; background: #FFFBEB; box-shadow: 0 0 0 3px rgba(245,158,11,.25); }
+  .opt:has(input:checked) .tick { background:#D97706; border-color:#D97706; color:#fff; }
+  .opt:has(input:focus-visible) { outline: 3px solid #F59E0B; outline-offset: 2px; }
+
+  .stamp-in { animation: stampIn .55s cubic-bezier(.3,1.7,.5,1) both; }
+  @keyframes stampIn { from { opacity:0; transform: scale(2.6) rotate(-30deg); } to { opacity:1; transform: scale(1) rotate(-12deg); } }
+  .stamp { transform: rotate(-12deg); }
+
+  .guilloche { background-image: repeating-radial-gradient(circle at 20% 30%, rgba(6,78,59,.05) 0 2px, transparent 2px 9px), repeating-radial-gradient(circle at 80% 70%, rgba(217,119,6,.06) 0 2px, transparent 2px 11px); }
+
+  .scrollbar-none::-webkit-scrollbar { display:none } .scrollbar-none { scrollbar-width:none }
+  .toast { animation: toastIn .3s ease both; }
+  @keyframes toastIn { from { opacity:0; transform: translate(-50%, 16px);} to { opacity:1; transform: translate(-50%,0);} }
+
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+  @media print {
+    .no-print { display:none !important; }
+    body { background:#fff; }
+    #printable { box-shadow:none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script>
+/* ============================================================================
+   ⚙️ منطق التطبيق
+   ============================================================================ */
+const STORE_KEY = 'rq-values-journey:v1';
+const STAGES = ['بوابة القيمة', 'التقييم الذاتي القبلي', 'بطاقات التعرّف', 'القصة المصوّرة', 'لو كنت مكانهم', 'التقييم الذاتي البعدي', 'جواز القيمة'];
+const STORY_LABELS = ['المشكلة', 'المبادرة', 'النتيجة'];
+const CARD_DEFS = [
+  { k: 'meaning', title: 'المعنى', icon: '📖' },
+  { k: 'religion', title: 'من ديننا', icon: '🕌' },
+  { k: 'behaviors', title: 'كيف تظهر فيّ؟', icon: '🙋' },
+  { k: 'example', title: 'مثال من حياتي', icon: '🏫' }
+];
+
+function loadState() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (e) { return {}; } }
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
+
+const state = Object.assign({ traveler: null, passports: [], progress: {}, familyStamps: 0, last: null }, loadState());
+const ui = { screen: 'landing', landing: 'passport', tab: 'values', valueId: null, flipped: false, wallFilter: 'all', wallSearch: '', celebrate: false, stampAnim: false };
+if (state.traveler) {
+  ui.screen = 'dashboard';
+  if (state.last && state.last.tab) ui.tab = state.last.tab;
+  if (state.last && state.last.screen === 'journey' && getValue(state.last.valueId)) { ui.screen = 'journey'; ui.valueId = state.last.valueId; }
+}
+
+/* ---------- أدوات مساعدة ---------- */
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function getValue(id) { return APP_DATA.values.find(v => v.id === id); }
+function rnd(n) { return Math.floor(Math.random() * n); }
+function fmtDate(ts) {
+  try { return new Date(ts).toLocaleDateString('ar-SA-u-ca-islamic-umalqura-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' }); }
+  catch (e) { return new Date(ts).toLocaleDateString(); }
+}
+function pk(vid) { return state.traveler.ticket + '|' + vid; }
+function getProg(vid) {
+  const k = pk(vid);
+  if (!state.progress[k]) state.progress[k] = { stage: 0, pre: {}, post: {}, card: 0, seen: [], slide: 0, maxSlide: 0, sim: { choices: [], note: '' }, done: false };
+  return state.progress[k];
+}
+function myPassport(vid) { return state.traveler && state.passports.find(p => p.ticket === state.traveler.ticket && p.valueId === vid); }
+function stats() {
+  const s = APP_DATA.seedStats;
+  return {
+    passports: s.passports + state.passports.length,
+    wall: s.wall + state.passports.filter(p => p.onWall !== false).length,
+    family: s.familyStamps + state.familyStamps
+  };
+}
+function toast(msg) {
+  const root = document.getElementById('toast-root');
+  root.innerHTML = `<div role="status" class="toast fixed bottom-6 left-1/2 z-[60] bg-ink text-cream px-5 py-3 rounded-2xl shadow-2xl text-sm font-semibold border border-gold2/40 max-w-[90vw] text-center">${esc(msg)}</div>`;
+  clearTimeout(toast._t); toast._t = setTimeout(() => root.innerHTML = '', 2600);
+}
+function remember() { state.last = { screen: ui.screen, valueId: ui.valueId, tab: ui.tab }; save(); }
+function go(screen, valueId) {
+  ui.screen = screen; if (valueId !== undefined) ui.valueId = valueId;
+  ui.flipped = false; remember(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function keepScroll(fn) { const y = window.scrollY; fn(); window.scrollTo(0, y); }
+
+/* ---------- عناصر مشتركة ---------- */
+function emblemSVG(size = 90) {
+  const id = 'g' + size;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" aria-hidden="true">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FDE68A"/><stop offset=".5" stop-color="#F59E0B"/><stop offset="1" stop-color="#B45309"/></linearGradient></defs>
+    <g fill="none" stroke="url(#${id})" stroke-width="2.4">
+      <circle cx="50" cy="50" r="27"/><ellipse cx="50" cy="50" rx="12" ry="27"/><path d="M23 50h54M27 37h46M27 63h46"/>
+      <path d="M18 72 C 8 58, 8 38, 20 24" stroke-linecap="round"/><path d="M82 72 C 92 58, 92 38, 80 24" stroke-linecap="round"/>
+    </g>
+    <g fill="url(#${id})">
+      ${[0,1,2,3,4].map(i => `<ellipse cx="${15 - i*0.6}" cy="${66 - i*9}" rx="3.2" ry="6" transform="rotate(${-30 + i*10} ${15 - i*0.6} ${66 - i*9})"/><ellipse cx="${85 + i*0.6}" cy="${66 - i*9}" rx="3.2" ry="6" transform="rotate(${30 - i*10} ${85 + i*0.6} ${66 - i*9})"/>`).join('')}
+      <path d="M50 8 l3 6 6.5 1 -4.7 4.6 1.1 6.4 -5.9-3.1 -5.9 3.1 1.1-6.4 -4.7-4.6 6.5-1z"/>
+    </g>
+  </svg>`;
+}
+
+function flightBoard() {
+  const f = APP_DATA.flight;
+  const cell = (k, v) => `<div class="flex items-center gap-2 shrink-0"><span class="text-[11px] sm:text-xs text-amber-200/60">${k}</span><span class="flap text-amber-300 font-bold text-xs sm:text-sm">${v}</span></div>`;
+  return `<div class="board border-b border-gold2/30 no-print">
+    <div class="max-w-6xl mx-auto px-4 py-2.5 flex items-center gap-4 sm:gap-6 overflow-x-auto scrollbar-none">
+      <div class="flex items-center gap-2 shrink-0 text-amber-300"><span class="text-lg">✈</span><span class="font-extrabold text-xs sm:text-sm">المغادرة</span></div>
+      ${cell('رقم الرحلة', esc(f.number))}
+      ${cell('الوجهة', esc(f.destination))}
+      ${cell('البوابة', esc(state.traveler ? state.traveler.gate : f.gate))}
+      <div class="flex items-center gap-2 shrink-0"><span class="text-[11px] sm:text-xs text-amber-200/60">الحالة</span><span class="flap text-xs sm:text-sm font-bold text-emerald-400 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 blink"></span>${esc(f.status)}</span></div>
+    </div>
+  </div>`;
+}
+
+function footer() {
+  return `<footer class="no-print border-t border-royal/10 mt-10">
+    <div class="max-w-6xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-royal/70">
+      <div class="text-center sm:text-start"><span class="font-bold text-royal">${esc(APP_DATA.school.name)}</span> · ${esc(APP_DATA.school.subtitle)}</div>
+      <div class="text-center">${esc(APP_DATA.supervisorTitle)}: ${APP_DATA.supervisors.map(esc).join(' · ')}</div>
+      <button onclick="resetAll()" class="text-xs text-royal/40 hover:text-red-700 hover:underline underline-offset-4">إعادة ضبط البيانات</button>
+    </div>
+  </footer>`;
+}
+
+function boardingPass(t, notchBg) {
+  const f = APP_DATA.flight;
+  const field = (k, v, cls = '') => `<div><div class="text-[11px] text-royal/55 font-semibold">${k}</div><div class="font-extrabold text-royal ${cls}">${v}</div></div>`;
+  return `<div class="ticket-in w-full max-w-2xl mx-auto">
+    <div class="relative flex flex-col sm:flex-row rounded-3xl overflow-hidden bg-cream shadow-[0_30px_70px_-20px_rgba(0,0,0,.6)] ring-1 ring-gold2/40">
+      <div class="flex-1 p-5 sm:p-6 guilloche">
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <div class="flex items-center gap-2"><div class="w-10 h-10 rounded-xl bg-royal grid place-items-center">${emblemSVG(30)}</div>
+            <div><div class="font-black text-royal leading-tight">بطاقة صعود الطائرة</div><div class="text-[11px] tracking-[.2em] text-gold font-bold" dir="ltr">BOARDING PASS</div></div></div>
+          <span class="px-3 py-1 rounded-full bg-gradient-to-l from-gold to-gold2 text-white text-xs font-extrabold shadow">${esc(t.seatClass)}</span>
+        </div>
+        <div class="mb-4">${field('اسم المسافر', esc(t.name), 'text-xl sm:text-2xl')}</div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="text-center"><div class="text-xl sm:text-2xl font-black text-royal">${esc(f.from)}</div><div class="text-[11px] text-royal/55">من</div></div>
+          <div class="flex-1 flex items-center gap-1 text-gold"><span class="flex-1 border-t-2 border-dashed border-gold/50"></span><span class="text-xl">✈</span><span class="flex-1 border-t-2 border-dashed border-gold/50"></span></div>
+          <div class="text-center"><div class="text-xl sm:text-2xl font-black text-royal">القيم</div><div class="text-[11px] text-royal/55">إلى</div></div>
+        </div>
+        <div class="grid grid-cols-4 gap-3 text-sm">
+          ${field('الرحلة', esc(f.number))}${field('البوابة', esc(t.gate))}${field('المقعد', esc(t.seat))}${field('الصعود', esc(f.boardingTime))}
+        </div>
+      </div>
+      <div class="relative notch ticket-stub sm:w-48 p-5 bg-royal text-cream flex sm:flex-col items-center justify-between gap-4" style="--notch-bg:${notchBg}">
+        <div class="text-center"><div class="text-[11px] text-amber-200/70">رقم التذكرة</div><div class="font-black text-gold2 tracking-wider" dir="ltr">${esc(t.ticket)}</div></div>
+        <div class="text-center"><div class="text-[11px] text-amber-200/70">تاريخ الإصدار</div><div class="font-bold text-sm">${fmtDate(t.issuedAt)}</div></div>
+        <div class="barcode w-24 sm:w-full rounded p-1"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================================
+   المرحلة الأولى: صالة المغادرة
+   ============================================================================ */
+function renderLanding() {
+  const t = state.traveler;
+  let center = '';
+  if (ui.landing === 'passport') {
+    center = `
+      <div class="fade-up delay-2 flex flex-col items-center">
+        <div class="passport-wrap passport-glow" id="passportWrap">
+          <div class="passport-book" onclick="openPassport()" role="button" tabindex="0" aria-label="افتح جواز السفر" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPassport()}">
+            <div class="passport-page flex flex-col items-center justify-center text-center p-6">
+              <div class="text-5xl mb-3">🎫</div><div class="font-extrabold text-royal">جاري إصدار تذكرتك...</div>
+            </div>
+            <div class="passport-cover flex flex-col items-center justify-between py-7 px-4 text-center">
+              <div><div class="gold-text font-black text-lg leading-tight">جواز سفر القيم</div><div class="text-[10px] tracking-[.35em] text-amber-300/70 mt-1" dir="ltr">PASSPORT OF VALUES</div></div>
+              ${emblemSVG(110)}
+              <div><div class="gold-text font-extrabold text-sm">${esc(APP_DATA.school.name)}</div>
+                <div class="mt-2 mx-auto w-9 h-6 rounded border border-amber-400/60 grid place-items-center"><div class="w-4 h-2.5 rounded-sm border border-amber-400/60"></div></div></div>
+            </div>
+          </div>
+        </div>
+        <button onclick="openPassport()" class="gold-btn mt-9 text-white font-extrabold px-6 sm:px-7 py-3.5 rounded-2xl text-base sm:text-lg flex items-center gap-2">
+          <span>👆</span> اضغط على جوازك لاستلام تذكرة الصعود
+        </button>
+      </div>`;
+  } else if (ui.landing === 'form') {
+    center = `
+      <form onsubmit="submitName(event)" class="fade-up w-full max-w-md bg-cream/95 backdrop-blur rounded-3xl p-6 sm:p-8 shadow-2xl ring-1 ring-gold2/40">
+        <div class="flex items-center gap-3 mb-5"><div class="w-12 h-12 rounded-2xl bg-royal grid place-items-center">${emblemSVG(36)}</div>
+          <div><div class="font-black text-royal text-xl">مكتب إصدار التذاكر</div><div class="text-sm text-royal/60">أدخل بياناتك لإصدار بطاقة الصعود</div></div></div>
+        <label for="nameInput" class="block font-bold text-royal mb-2">اسم المسافرة <span class="text-xs font-semibold text-royal/50">(الاسم الأول أو الاسم الثلاثي)</span></label>
+        <input id="nameInput" autocomplete="off" maxlength="60" placeholder="مثال: زهراء  أو  فاطمة علي حسن" class="w-full rounded-2xl border-2 border-royal/15 focus:border-gold2 focus:ring-4 focus:ring-gold2/20 outline-none px-4 py-3.5 text-lg font-semibold bg-white transition">
+        <p id="nameErr" class="text-sm text-red-700 mt-2 min-h-[1.25rem]" aria-live="polite"></p>
+        <div class="flex gap-3 mt-3">
+          <button type="submit" class="gold-btn flex-1 text-white font-extrabold py-3.5 rounded-2xl">إصدار التذكرة 🎫</button>
+          <button type="button" onclick="ui.landing='passport';render()" class="px-5 rounded-2xl border-2 border-royal/15 text-royal font-bold hover:bg-royal/5">رجوع</button>
+        </div>
+      </form>`;
+  } else {
+    center = `
+      <div class="w-full flex flex-col items-center gap-6">
+        <div class="fade-up text-center text-cream"><div class="text-amber-300 font-bold">✓ تم إصدار تذكرتك بنجاح</div><div class="text-sm text-cream/70">توجّه إلى البوابة ${esc(t.gate)} — رحلة سعيدة!</div></div>
+        ${boardingPass(t, '#064E3B')}
+        <div class="fade-up flex flex-wrap justify-center gap-3" style="animation-delay:.7s">
+          <button onclick="go('dashboard')" class="gold-btn text-white font-extrabold px-8 py-4 rounded-2xl text-lg flex items-center gap-2">ابدأ الرحلة <span class="text-xl">←</span></button>
+          <button onclick="newTraveler()" class="px-5 py-4 rounded-2xl border-2 border-cream/25 text-cream font-bold hover:bg-white/10">لست ${esc(t.name.split(' ')[0])}؟ مسافر جديد</button>
+        </div>
+      </div>`;
+  }
+
+  return `
+  <div class="lounge min-h-screen flex flex-col relative overflow-hidden">
+    ${flightBoard()}
+    <div class="overflow-hidden bg-black/40 border-b border-gold2/10 text-amber-200/80 text-xs py-1.5 no-print"><div class="marquee">✈ الرحلة ${esc(APP_DATA.flight.number)} المتجهة إلى ${esc(APP_DATA.flight.destination)} — يُرجى من جميع المسافرين التوجه إلى بوابة الصعود ومعهم جوازات سفرهم ✈</div></div>
+
+    <!-- نوافذ الصالة والطائرة -->
+    <div class="absolute inset-x-0 top-24 h-[46%] pointer-events-none" aria-hidden="true">
+      <div class="max-w-6xl mx-auto h-full px-4 grid grid-cols-3 sm:grid-cols-5 gap-3 opacity-90">
+        ${[0,1,2,3,4].map(i => `<div class="${i > 2 ? 'hidden sm:block' : ''} rounded-t-[999px] border-4 border-[#0b2a21] bg-gradient-to-b from-[#123a5a] via-[#3f6b84] to-[#e8a85a] shadow-[inset_0_0_40px_rgba(0,0,0,.35)] overflow-hidden relative">
+          <div class="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-[#0b2a21] to-transparent"></div></div>`).join('')}
+      </div>
+      <div class="absolute top-[28%] inset-x-0 overflow-hidden h-28">
+        <svg class="plane-fly absolute right-0" width="170" height="60" viewBox="0 0 170 60"><g fill="#F9F8F3" opacity=".92">
+          <path d="M8 30 C 8 26, 14 24, 22 24 L 140 24 C 156 24, 166 28, 166 30 C 166 32, 156 36, 140 36 L 22 36 C 14 36, 8 34, 8 30 Z"/>
+          <path d="M70 26 L 100 2 L 112 2 L 96 26 Z"/><path d="M70 34 L 100 58 L 112 58 L 96 34 Z"/>
+          <path d="M140 25 L 156 8 L 164 8 L 158 26 Z"/></g>
+          <g fill="#064E3B">${[30,40,50,60,110,120].map(x => `<circle cx="${x}" cy="29" r="1.6"/>`).join('')}</g>
+        </svg>
+      </div>
+    </div>
+    <div class="absolute top-20 right-[12%] w-40 h-40 rounded-full bg-amber-400/20 blur-3xl lamp" aria-hidden="true"></div>
+    <div class="absolute top-20 left-[10%] w-48 h-48 rounded-full bg-amber-500/15 blur-3xl lamp" style="animation-delay:1.5s" aria-hidden="true"></div>
+    <div class="absolute inset-x-0 bottom-0 h-1/3 floor-shine pointer-events-none" aria-hidden="true"></div>
+
+    <main class="relative z-10 flex-1 flex flex-col items-center justify-start px-4 pt-[22vh] sm:pt-[24vh] pb-12">
+      <div class="text-center mb-8 fade-up">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/30 border border-gold2/30 text-amber-200 text-sm mb-4 backdrop-blur">✦ صالة المغادرة · بوابة ${esc(t ? t.gate : APP_DATA.flight.gate)} ✦</div>
+        <h1 class="text-3xl sm:text-5xl md:text-6xl font-black text-cream leading-tight drop-shadow-[0_4px_20px_rgba(0,0,0,.5)]">أهلاً بك في <span class="gold-text">رحلة القيم الإيجابية</span></h1>
+        <p class="mt-3 text-lg sm:text-2xl font-bold text-amber-200/90">${esc(APP_DATA.school.name)}</p>
+      </div>
+      ${center}
+    </main>
+    <div class="relative z-10 text-center text-cream/50 text-xs pb-4 px-4">${esc(APP_DATA.supervisorTitle)}: ${APP_DATA.supervisors.map(esc).join(' · ')}</div>
+  </div>`;
+}
+
+function openPassport() {
+  const w = document.getElementById('passportWrap');
+  if (!w || w.classList.contains('opening')) return;
+  w.classList.add('opening'); w.classList.remove('passport-glow');
+  setTimeout(() => { ui.landing = 'form'; render(); setTimeout(() => { const i = document.getElementById('nameInput'); i && i.focus(); }, 50); }, 850);
+}
+function submitName(e) {
+  e.preventDefault();
+  const name = document.getElementById('nameInput').value.replace(/\s+/g, ' ').trim();
+  const err = document.getElementById('nameErr');
+  if (name.length < 2) { err.textContent = 'فضلاً اكتبي اسمك أولاً.'; return; }
+  const rows = ['1', '2', '3', '4'], seats = ['A', 'B', 'E', 'F'];
+  state.traveler = {
+    name, ticket: 'BP' + String(100000 + rnd(900000)),
+    gate: APP_DATA.flight.gate, seat: rows[rnd(4)] + seats[rnd(4)],
+    seatClass: APP_DATA.flight.seatClass, issuedAt: Date.now()
+  };
+  ui.landing = 'ticket'; state.last = null; save(); render();
+}
+function newTraveler() {
+  if (!confirm('سيتم تسجيل خروج المسافر الحالي (تبقى جوازاته في الجدارية). متابعة؟')) return;
+  state.traveler = null; state.last = null; save();
+  closeModal(); ui.screen = 'landing'; ui.landing = 'passport'; render(); window.scrollTo(0, 0);
+}
+function resetAll() {
+  if (!confirm('سيتم حذف جميع البيانات المحفوظة على هذا الجهاز (المسافرون، الجوازات، الجدارية، الأختام). هل أنت متأكد؟')) return;
+  try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+  location.reload();
+}
+
+/* ============================================================================
+   المرحلة الثانية: لوحة الرحلة والجدارية
+   ============================================================================ */
+function renderDashboard() {
+  const t = state.traveler, s = stats();
+  const done = state.passports.filter(p => p.ticket === t.ticket).length;
+  const statCard = (n, label, icon, delay) => `
+    <div class="flex flex-col items-center fade-up" style="animation-delay:${delay}s">
+      <div class="stat-ring w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full flex flex-col items-center justify-center text-cream">
+        <span class="text-lg sm:text-2xl">${icon}</span>
+        <span class="gold-text text-3xl sm:text-4xl md:text-5xl font-black leading-none mt-0.5" data-count="${n}">0</span>
+      </div>
+      <div class="mt-3 font-bold text-royal text-xs sm:text-base text-center">${label}</div>
+    </div>`;
+
+  return `
+  ${flightBoard()}
+  <header class="bg-royal text-cream relative overflow-hidden">
+    <div class="absolute inset-0 opacity-30" style="background: radial-gradient(ellipse at 10% 0%, rgba(245,158,11,.45), transparent 50%), radial-gradient(ellipse at 90% 100%, rgba(245,158,11,.25), transparent 50%)"></div>
+    <div class="relative max-w-6xl mx-auto px-4 py-6 sm:py-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-14 h-14 rounded-2xl bg-ink/60 ring-1 ring-gold2/40 grid place-items-center shrink-0">${emblemSVG(44)}</div>
+        <div><div class="text-amber-200/80 text-sm">${esc(APP_DATA.school.name)} · لوحة الرحلة</div>
+          <h1 class="text-xl sm:text-2xl font-black">مرحباً، <span class="gold-text">${esc(t.name)}</span> 👋</h1>
+          <div class="text-sm text-cream/70">المقعد ${esc(t.seat)} · ${esc(t.seatClass)} · أنجزت ${done} من ${APP_DATA.values.length} قيم</div></div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="showTicket()" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 ring-1 ring-white/15 font-bold text-sm">🎫 تذكرتي</button>
+        <button onclick="newTraveler()" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 ring-1 ring-white/15 font-bold text-sm">👤 مسافر جديد</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4">
+    <section class="grid grid-cols-3 gap-3 sm:gap-8 py-8 sm:py-10 max-w-3xl mx-auto" aria-label="الإحصائيات">
+      ${statCard(s.passports, 'الجوازات الصادرة', '🛂', 0)}
+      ${statCard(s.wall, 'مشاركات الجدارية', '🖼️', .1)}
+      ${statCard(s.family, 'أختام الأسرة', '🏠', .2)}
+    </section>
+
+    <div class="sticky top-0 z-20 bg-cream/90 backdrop-blur py-3 -mx-4 px-4">
+      <div class="flex bg-white rounded-2xl p-1.5 shadow-sm ring-1 ring-royal/10 max-w-md mx-auto" role="tablist">
+        ${['values', 'wall'].map(k => `<button role="tab" aria-selected="${ui.tab === k}" onclick="setTab('${k}')" class="flex-1 py-2.5 rounded-xl font-extrabold transition ${ui.tab === k ? 'bg-royal text-cream shadow' : 'text-royal/70 hover:text-royal'}">${k === 'values' ? '🧭 رحلة القيم' : '🖼️ جدارية القيم'}</button>`).join('')}
+      </div>
+    </div>
+
+    <section class="py-6">${ui.tab === 'values' ? renderValuesTab() : renderWallTab()}</section>
+  </main>
+  ${footer()}`;
+}
+function setTab(k) { ui.tab = k; remember(); render(); }
+
+function renderValuesTab() {
+  return `<div class="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
+    ${APP_DATA.values.map((v, i) => {
+      const count = state.passports.filter(p => p.valueId === v.id).length;
+      const mine = myPassport(v.id);
+      const prog = state.progress[pk(v.id)];
+      const inProg = !mine && prog && prog.stage > 0;
+      const btn = mine ? 'عرض جوازي ✓' : inProg ? `متابعة · ${prog.stage + 1}/${STAGES.length}` : 'ابدأ';
+      return `
+      <article class="fade-up group relative rounded-3xl overflow-hidden bg-white shadow-sm ring-1 ring-royal/10 hover:shadow-xl hover:-translate-y-1 transition flex flex-col" style="animation-delay:${i * .05}s">
+        <div class="relative h-36 sm:h-44 flex items-center justify-center" style="background: linear-gradient(160deg, ${v.color}, ${v.color}dd 60%, #022C22)">
+          <div class="absolute inset-0 opacity-25" style="background: radial-gradient(circle at 80% 20%, #F59E0B, transparent 45%)"></div>
+          <span class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/25 text-amber-200 font-black grid place-items-center text-sm ring-1 ring-amber-200/30">${i + 1}</span>
+          ${mine ? '<span class="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-gold2 text-white text-[11px] font-extrabold">✓ أنجزتها</span>' : ''}
+          <span class="text-6xl sm:text-7xl drop-shadow-lg group-hover:scale-110 transition">${v.icon}</span>
+        </div>
+        <div class="p-4 sm:p-5 flex flex-col flex-1">
+          <h3 class="font-black text-royal text-lg sm:text-xl">${esc(v.title)}</h3>
+          <p class="text-sm text-royal/60 mt-1 flex-1">${esc(v.tagline)}</p>
+          <div class="flex items-center justify-between mt-4 gap-2">
+            <span class="text-xs sm:text-sm font-bold text-gold flex items-center gap-1">🛂 <span>${count}</span> جواز</span>
+            ${inProg ? `<span class="h-1.5 flex-1 max-w-[60px] rounded-full bg-royal/10 overflow-hidden"><span class="block h-full bg-gold2" style="width:${(prog.stage / (STAGES.length - 1)) * 100}%"></span></span>` : ''}
+          </div>
+          <button onclick="go('journey','${v.id}')" class="mt-3 w-full py-2.5 rounded-xl font-extrabold text-sm sm:text-base transition ${mine ? 'bg-royal/5 text-royal ring-1 ring-royal/15 hover:bg-royal/10' : 'gold-btn text-white'}">${btn}</button>
+        </div>
+      </article>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderWallTab() {
+  const q = ui.wallSearch.trim();
+  const list = state.passports.filter(p => p.onWall !== false)
+    .filter(p => ui.wallFilter === 'all' || p.valueId === ui.wallFilter)
+    .filter(p => !q || p.name.includes(q))
+    .sort((a, b) => b.date - a.date);
+  const chips = [{ id: 'all', title: 'الكل', icon: '✨' }, ...APP_DATA.values].map(v =>
+    `<button onclick="ui.wallFilter='${v.id}';render()" class="shrink-0 px-3.5 py-2 rounded-full text-sm font-bold transition ${ui.wallFilter === v.id ? 'bg-royal text-cream' : 'bg-white text-royal ring-1 ring-royal/10 hover:ring-gold2'}">${v.icon} ${esc(v.title)}</button>`).join('');
+  return `
+  <div class="flex flex-col sm:flex-row gap-3 mb-5">
+    <input id="wallSearch" value="${esc(ui.wallSearch)}" oninput="wallSearchInput(this.value)" placeholder="🔎 ابحث باسم المسافر..." class="sm:w-64 shrink-0 rounded-2xl border-2 border-royal/10 focus:border-gold2 outline-none px-4 py-2.5 bg-white">
+    <div class="flex gap-2 overflow-x-auto scrollbar-none pb-1">${chips}</div>
+  </div>
+  ${list.length === 0 ? `
+    <div class="text-center py-16 bg-white rounded-3xl ring-1 ring-royal/10">
+      <div class="text-6xl mb-3">🖼️</div>
+      <div class="font-black text-royal text-xl">${state.passports.length ? 'لا توجد نتائج مطابقة' : 'الجدارية بانتظار أول المسافرين'}</div>
+      <p class="text-royal/60 mt-1">أكمل رحلة أي قيمة ليظهر اسمك هنا مع جوازك.</p>
+      <button onclick="setTab('values')" class="gold-btn text-white font-extrabold px-6 py-3 rounded-2xl mt-5">ابدأ رحلة قيمة</button>
+    </div>` : `
+    <div class="columns-1 sm:columns-2 lg:columns-3 gap-4">
+      ${list.map((p, i) => {
+        const v = getValue(p.valueId) || { title: '—', icon: '⭐', color: '#064E3B' };
+        const me = state.traveler && p.ticket === state.traveler.ticket;
+        return `<div class="break-inside-avoid mb-4 fade-up rounded-3xl bg-white ${me ? 'ring-2 ring-gold2' : 'ring-1 ring-royal/10'} shadow-sm overflow-hidden" style="animation-delay:${Math.min(i, 12) * .04}s">
+          <div class="h-2" style="background:${v.color}"></div>
+          <div class="p-4 flex gap-3">
+            <div class="w-12 h-12 shrink-0 rounded-2xl grid place-items-center text-2xl" style="background:${v.color}18">${v.icon}</div>
+            <div class="min-w-0 flex-1">
+              <div class="font-black text-royal truncate">${esc(p.name)} ${me ? '<span class="text-[11px] font-bold text-gold">(أنت)</span>' : ''}</div>
+              <div class="text-sm text-royal/70">أنجز قيمة <span class="font-bold" style="color:${v.color}">${esc(v.title)}</span></div>
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-royal/50"><span dir="ltr" class="font-bold text-gold">${esc(p.number)}</span><span>${fmtDate(p.date)}</span>${p.family ? '<span class="text-emerald-700 font-bold">🏠 مختوم من الأسرة</span>' : ''}</div>
+              ${p.note ? `<p class="mt-2 text-sm bg-cream rounded-xl px-3 py-2 text-royal/80 border-r-4 border-gold2">💡 ${esc(p.note)}</p>` : ''}
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`}`;
+}
+function wallSearchInput(val) {
+  ui.wallSearch = val;
+  clearTimeout(wallSearchInput._t);
+  wallSearchInput._t = setTimeout(() => {
+    keepScroll(render);
+    const e = document.getElementById('wallSearch');
+    if (e) { e.focus(); e.setSelectionRange(e.value.length, e.value.length); }
+  }, 250);
+}
+
+function showTicket() {
+  document.getElementById('modal-root').innerHTML = `
+    <div class="fixed inset-0 z-50 bg-ink/85 backdrop-blur-sm flex items-center justify-center p-4 fade-in overflow-y-auto" onclick="if(event.target===this)closeModal()" role="dialog" aria-label="تذكرتي">
+      <div class="w-full max-w-2xl">${boardingPass(state.traveler, '#064E3B')}
+        <div class="text-center mt-5"><button onclick="closeModal()" class="px-6 py-3 rounded-2xl bg-cream text-royal font-extrabold">إغلاق</button></div></div>
+    </div>`;
+}
+function closeModal() { document.getElementById('modal-root').innerHTML = ''; }
+
+/* ============================================================================
+   المرحلة الثالثة: مسار القيمة التفاعلي
+   ============================================================================ */
+function renderJourney() {
+  const v = getValue(ui.valueId);
+  if (!v) { ui.screen = 'dashboard'; return renderDashboard(); }
+  const p = getProg(v.id);
+  const pct = ((p.stage + 1) / STAGES.length) * 100;
+  const bodies = [stageIntro, stageAssess('pre'), stageCards, stageStory, stageSim, stageAssess('post'), stagePassport];
+  return `
+  ${flightBoard()}
+  <div class="sticky top-0 z-30 bg-royal text-cream shadow-lg no-print">
+    <div class="max-w-4xl mx-auto px-4 py-3">
+      <div class="flex items-center justify-between gap-3">
+        <button onclick="go('dashboard')" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 font-bold text-sm shrink-0">→ الرئيسية</button>
+        <div class="text-center min-w-0"><div class="font-black truncate">${v.icon} ${esc(v.title)}</div><div class="text-xs text-amber-200/80 truncate">${esc(STAGES[p.stage])}</div></div>
+        <div class="text-xs sm:text-sm font-extrabold text-gold2 shrink-0 whitespace-nowrap">المرحلة ${p.stage + 1} من ${STAGES.length}</div>
+      </div>
+      <div class="mt-3 relative h-2.5 rounded-full bg-white/15" role="progressbar" aria-valuemin="1" aria-valuemax="${STAGES.length}" aria-valuenow="${p.stage + 1}">
+        <div class="absolute inset-y-0 right-0 rounded-full bg-gradient-to-l from-gold2 to-gold transition-all duration-700" style="width:${pct}%"></div>
+        <div class="absolute -top-2 transition-all duration-700 text-base" style="right:calc(${pct}% - 12px)">✈️</div>
+      </div>
+      <div class="hidden md:flex justify-between mt-2 text-[11px] text-cream/50">${STAGES.map((s, i) => `<span class="${i <= p.stage ? 'text-amber-200' : ''}">${i < p.stage ? '✓ ' : ''}${s}</span>`).join('')}</div>
+    </div>
+  </div>
+  <main class="max-w-4xl mx-auto px-4 py-6 sm:py-10">${bodies[p.stage](v, p)}</main>
+  ${footer()}`;
+}
+
+function setStage(n) {
+  const p = getProg(ui.valueId); p.stage = n; ui.flipped = false; save(); render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function navButtons(back, next, nextLabel = 'التالي', enabled = true) {
+  return `<div class="flex items-center justify-between gap-3 mt-8">
+    ${back !== null ? `<button onclick="setStage(${back})" class="px-5 py-3 rounded-2xl border-2 border-royal/15 text-royal font-bold hover:bg-royal/5">→ السابق</button>` : '<span></span>'}
+    <button id="nextBtn" onclick="${next}" class="gold-btn text-white font-extrabold px-7 py-3.5 rounded-2xl transition ${enabled ? '' : 'opacity-50'}">${nextLabel} ←</button>
+  </div>`;
+}
+
+/* 1) بوابة القيمة */
+function stageIntro(v) {
+  return `<div class="fade-up text-center">
+    <div class="mx-auto w-32 h-32 sm:w-40 sm:h-40 rounded-full grid place-items-center text-7xl sm:text-8xl shadow-2xl ring-8 ring-gold2/20" style="background: radial-gradient(circle at 35% 30%, ${v.color}cc, ${v.color} 60%, #022C22)">${v.icon}</div>
+    <div class="mt-6 text-gold font-bold">بوابة القيمة</div>
+    <h2 class="text-3xl sm:text-4xl font-black text-royal mt-1">${esc(v.title)}</h2>
+    <p class="text-lg text-royal/70 mt-2">${esc(v.tagline)}</p>
+  </div>
+  <div class="mt-8 bg-white rounded-3xl p-5 sm:p-7 ring-1 ring-royal/10 shadow-sm fade-up delay-2">
+    <div class="font-black text-royal mb-4">🗺️ خط سير رحلتك</div>
+    <ol class="grid sm:grid-cols-2 gap-3">
+      ${STAGES.map((s, i) => `<li class="flex items-center gap-3 p-3 rounded-2xl ${i === 0 ? 'bg-amber-50 ring-1 ring-gold2/40' : 'bg-cream'}"><span class="w-8 h-8 rounded-full ${i === 0 ? 'bg-gold2 text-white' : 'bg-royal text-cream'} grid place-items-center font-black text-sm shrink-0">${i + 1}</span><span class="font-bold text-royal">${s}</span></li>`).join('')}
+    </ol>
+  </div>
+  <div class="text-center mt-8"><button onclick="setStage(1)" class="gold-btn text-white font-extrabold px-10 py-4 rounded-2xl text-lg">انطلق في الرحلة ✈️</button></div>`;
+}
+
+/* 2 و 6) التقييم الذاتي */
+function stageAssess(kind) {
+  return (v, p) => {
+    const ans = p[kind];
+    const isPost = kind === 'post';
+    const complete = Object.keys(ans).length === v.assessment.length;
+    let compare = '';
+    if (isPost && complete) {
+      const avg = o => Object.values(o).reduce((a, b) => a + b, 0) / v.assessment.length;
+      const a = avg(p.pre), b = avg(p.post);
+      compare = `<div class="mt-6 p-5 rounded-3xl bg-gradient-to-l from-royal to-royal2 text-cream fade-up">
+        <div class="font-black mb-3">📊 مقارنة تقييمك</div>
+        <div class="grid grid-cols-2 gap-4 text-center">
+          <div><div class="text-xs text-cream/70">قبل الرحلة</div><div class="text-3xl font-black">${a.toFixed(1)}<span class="text-sm">/4</span></div></div>
+          <div><div class="text-xs text-cream/70">بعد الرحلة</div><div class="text-3xl font-black gold-text">${b.toFixed(1)}<span class="text-sm">/4</span></div></div>
+        </div>
+        <p class="text-sm text-center mt-3 text-amber-100">${b > a ? 'رائع! عزمك على هذه القيمة صار أقوى 🌟' : b === a ? 'ثابت على الخير — استمر وطبّق ما تعلمته 💪' : 'الصدق مع النفس بداية التغيير، والطريق ما زال أمامك 🌱'}</p>
+      </div>`;
+    }
+    return `<div class="fade-up">
+      <div class="text-center mb-6">
+        <div class="text-4xl mb-2">${isPost ? '🛬' : '🛫'}</div>
+        <h2 class="text-2xl sm:text-3xl font-black text-royal">التقييم الذاتي ${isPost ? 'بعد الرحلة' : 'قبل الرحلة'}</h2>
+        <p class="text-royal/60 mt-1">${isPost ? 'بعد ما تعلمته، كيف ستتعامل مع هذه السلوكيات؟' : 'كن صادقاً مع نفسك، لا توجد إجابة خاطئة!'}</p>
+      </div>
+      <div class="space-y-4">
+        ${v.assessment.map((q, qi) => `
+          <div class="bg-white rounded-3xl p-5 ring-1 ring-royal/10 shadow-sm">
+            <div class="flex gap-3 items-start mb-4"><span class="w-8 h-8 rounded-full bg-royal text-cream grid place-items-center font-black text-sm shrink-0">${qi + 1}</span><p class="font-bold text-royal text-lg leading-relaxed">${esc(q)}</p></div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" role="radiogroup">
+              ${APP_DATA.ratingScale.map(r => {
+                const on = ans[qi] === r.score;
+                return `<button role="radio" aria-checked="${on}" onclick="rate('${kind}',${qi},${r.score})" class="py-3 rounded-2xl border-2 font-bold transition flex flex-col items-center gap-1 ${on ? 'border-gold bg-amber-50 text-royal shadow-[0_0_0_3px_rgba(245,158,11,.25)] scale-[1.03]' : 'border-royal/10 text-royal/70 hover:border-gold2/60 bg-cream/50'}">
+                  <span class="text-2xl sm:text-3xl">${r.emoji}</span><span class="text-sm">${r.label}</span></button>`;
+              }).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
+      ${compare}
+      ${navButtons(isPost ? 4 : 0, `nextAssess('${kind}')`, isPost ? 'استلم جوازك 🛂' : 'التالي', complete)}
+    </div>`;
+  };
+}
+function rate(kind, qi, score) { const p = getProg(ui.valueId); p[kind][qi] = score; save(); keepScroll(render); }
+function nextAssess(kind) {
+  const v = getValue(ui.valueId), p = getProg(v.id);
+  if (Object.keys(p[kind]).length < v.assessment.length) return toast('أجب عن جميع الأسئلة أولاً ✋');
+  if (kind === 'pre') setStage(2); else completeJourney();
+}
+
+/* 3) بطاقات التعرّف */
+function cardBack(v, k) {
+  const c = v.cards;
+  if (k === 'meaning') return `<p class="text-lg sm:text-xl leading-loose font-semibold">${esc(c.meaning)}</p>`;
+  if (k === 'religion') return `<p class="text-xl sm:text-2xl leading-loose font-bold text-amber-100">${esc(c.religion.text)}</p><p class="mt-4 text-sm text-cream/70">${esc(c.religion.source)}</p>`;
+  if (k === 'behaviors') return `<ul class="space-y-3 text-start">${c.behaviors.map((b, i) => `<li class="flex gap-3 items-start bg-white/10 rounded-2xl p-3"><span class="w-7 h-7 rounded-full bg-gold2 text-white grid place-items-center font-black text-sm shrink-0">${i + 1}</span><span class="font-semibold leading-relaxed">${esc(b)}</span></li>`).join('')}</ul>`;
+  return `<div class="text-4xl mb-3">💬</div><p class="text-lg sm:text-xl leading-loose font-semibold">«${esc(c.example)}»</p>`;
+}
+function stageCards(v, p) {
+  const i = p.card, d = CARD_DEFS[i];
+  const seen = (p.seen || []).filter(Boolean).length;
+  return `<div class="fade-up">
+    <div class="text-center mb-6"><h2 class="text-2xl sm:text-3xl font-black text-royal">بطاقات التعرّف على القيمة</h2><p class="text-royal/60 mt-1">اضغط على البطاقة لتقليبها 🔄 — <span id="seenCount" class="font-bold text-gold">قلبت ${seen} من 4</span></p></div>
+    <div class="flex justify-center flex-wrap gap-2 mb-5">${CARD_DEFS.map((c, j) => `<button onclick="cardGo(${j})" class="px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold transition ${j === i ? 'bg-royal text-cream' : (p.seen || [])[j] ? 'bg-amber-100 text-royal' : 'bg-white text-royal/60 ring-1 ring-royal/10'}">${c.icon} <span class="hidden sm:inline">${c.title}</span></button>`).join('')}</div>
+    <div class="flip-card ${ui.flipped ? 'flipped' : ''} mx-auto max-w-xl h-[360px] sm:h-[380px] cursor-pointer" id="flipCard" onclick="flipCard()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();flipCard()}" aria-label="قلب بطاقة ${d.title}">
+      <div class="flip-inner">
+        <div class="flip-face flex flex-col items-center justify-center text-center p-6 bg-white ring-2 ring-gold2/50 shadow-xl guilloche">
+          <div class="absolute top-4 right-5 text-sm font-black text-gold">${i + 1} / 4</div>
+          <div class="w-28 h-28 rounded-full grid place-items-center text-6xl mb-4" style="background:${v.color}18">${d.icon}</div>
+          <div class="text-3xl font-black text-royal">${d.title}</div>
+          <div class="mt-2 text-royal/60">${esc(v.title)}</div>
+          <div class="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-royal/5 text-royal font-bold text-sm animate-pulse">🔄 اضغط للقلب</div>
+        </div>
+        <div class="flip-face flip-back flex flex-col items-center justify-center text-center p-6 sm:p-8 text-cream shadow-xl overflow-y-auto" style="background: linear-gradient(160deg, ${v.color}, #022C22)">
+          <div class="absolute top-4 right-5 text-sm font-black text-amber-300">${d.icon} ${d.title}</div>
+          <div class="w-full mt-6">${cardBack(v, d.k)}</div>
+        </div>
+      </div>
+    </div>
+    <div class="flex justify-center items-center gap-4 mt-5">
+      <button onclick="cardGo(${i - 1})" ${i === 0 ? 'disabled' : ''} aria-label="البطاقة السابقة" class="w-12 h-12 rounded-full bg-white ring-1 ring-royal/15 text-royal text-xl font-black disabled:opacity-30">→</button>
+      <div class="flex gap-1.5">${CARD_DEFS.map((_, j) => `<span class="h-2 rounded-full transition-all ${j === i ? 'w-6 bg-gold2' : 'w-2 bg-royal/20'}"></span>`).join('')}</div>
+      <button onclick="cardGo(${i + 1})" ${i === 3 ? 'disabled' : ''} aria-label="البطاقة التالية" class="w-12 h-12 rounded-full bg-white ring-1 ring-royal/15 text-royal text-xl font-black disabled:opacity-30">←</button>
+    </div>
+    ${navButtons(1, 'nextCards()', 'إلى القصة', seen === 4)}
+  </div>`;
+}
+function flipCard() {
+  const p = getProg(ui.valueId);
+  ui.flipped = !ui.flipped;
+  document.getElementById('flipCard').classList.toggle('flipped', ui.flipped);
+  p.seen = p.seen || []; if (!p.seen[p.card]) { p.seen[p.card] = true; save(); }
+  const n = p.seen.filter(Boolean).length;
+  document.getElementById('seenCount').textContent = `قلبت ${n} من 4`;
+  if (n === 4) document.getElementById('nextBtn').classList.remove('opacity-50');
+}
+function cardGo(j) { if (j < 0 || j > 3) return; const p = getProg(ui.valueId); p.card = j; ui.flipped = false; save(); keepScroll(render); }
+function nextCards() {
+  const p = getProg(ui.valueId);
+  if ((p.seen || []).filter(Boolean).length < 4) return toast('اقلب البطاقات الأربع لتتعرّف على القيمة كاملة 🔄');
+  setStage(3);
+}
+
+/* 4) القصة المصوّرة */
+function sceneSVG(key) {
+  if (key === 'messy') return `<svg viewBox="0 0 400 240" class="w-full h-full" preserveAspectRatio="xMidYMid slice" role="img" aria-label="ساحة مدرسة مهملة">
+    <defs><linearGradient id="skM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#94A3B8"/><stop offset="1" stop-color="#CBD5E1"/></linearGradient></defs>
+    <rect width="400" height="240" fill="url(#skM)"/>
+    <g fill="#64748B" opacity=".45"><ellipse cx="80" cy="34" rx="46" ry="12"/><ellipse cx="300" cy="26" rx="56" ry="13"/><ellipse cx="200" cy="44" rx="30" ry="8"/></g>
+    <rect x="30" y="70" width="340" height="92" fill="#D6D3D1"/><rect x="26" y="62" width="348" height="10" fill="#A8A29E"/>
+    <g fill="#78716C">${[50,110,250,310].map(x => `<rect x="${x}" y="88" width="38" height="30" rx="2"/>`).join('')}</g>
+    <path d="M58 92 l14 18 M262 90 l10 22" stroke="#D6D3D1" stroke-width="2"/>
+    <rect x="180" y="104" width="40" height="58" fill="#57534E"/><circle cx="212" cy="134" r="2" fill="#D6D3D1"/>
+    <path d="M70 140 q10 -10 25 0 t25 0" stroke="#A16207" stroke-width="3" fill="none" opacity=".5"/>
+    <rect y="160" width="400" height="80" fill="#A8A29E"/>
+    <path d="M30 205 l22 -9 l12 11 l20 -7 M240 225 l16 -6 l8 8 l18 -10" stroke="#78716C" stroke-width="2" fill="none"/>
+    <rect x="336" y="118" width="8" height="52" fill="#57534E"/>
+    <path d="M340 128 l-20 -22 M340 138 l18 -18 M340 122 l3 -24 M326 112 l-8 2" stroke="#57534E" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <g fill="#A16207"><ellipse cx="320" cy="174" rx="4" ry="2"/><ellipse cx="352" cy="178" rx="4" ry="2"/></g>
+    <g fill="#F5F5F4" stroke="#78716C" stroke-width="1">
+      <path d="M60 180 l10 -4 l6 6 l-4 8 l-10 0 z"/><path d="M150 196 l12 -3 l4 9 l-12 4 z"/><path d="M270 182 l9 -2 l5 7 l-8 5 z"/>
+      <path d="M110 214 l11 -3 l5 8 l-10 5 z"/><path d="M360 206 l10 -2 l4 8 l-10 3 z"/><path d="M200 182 l8 -2 l4 6 l-8 4 z"/></g>
+    <g><rect x="90" y="190" width="20" height="8" rx="3" fill="#7DD3FC" opacity=".8" transform="rotate(-20 100 194)"/>
+      <rect x="230" y="200" width="22" height="8" rx="3" fill="#86EFAC" opacity=".8" transform="rotate(25 241 204)"/>
+      <rect x="300" y="214" width="10" height="14" rx="2" fill="#DC2626" transform="rotate(70 305 221)"/>
+      <rect x="170" y="222" width="10" height="14" rx="2" fill="#2563EB" transform="rotate(-60 175 229)"/></g>
+    <path d="M20 160 q8 -14 16 0 q6 -10 12 0" fill="#A3A3A3"/>
+  </svg>`;
+  if (key === 'tools') return `<svg viewBox="0 0 400 240" class="w-full h-full" preserveAspectRatio="xMidYMid slice" role="img" aria-label="أدوات تنظيف وشتلات زراعية">
+    <rect width="400" height="240" fill="#FEF3C7"/>
+    <circle cx="200" cy="90" r="120" fill="#FDE68A" opacity=".6"/>
+    <rect y="178" width="400" height="62" fill="#D6C7A1"/><rect y="178" width="400" height="4" fill="#C4B48A"/>
+    <line x1="58" y1="30" x2="86" y2="174" stroke="#92400E" stroke-width="7" stroke-linecap="round"/>
+    <path d="M68 168 L106 166 L118 216 L60 218 Z" fill="#F59E0B"/>
+    <g stroke="#B45309" stroke-width="2">${[70,80,90,100,110].map(x => `<line x1="${x - 2}" y1="180" x2="${x + 2}" y2="214"/>`).join('')}</g>
+    <path d="M140 132 L204 132 L196 214 L148 214 Z" fill="#0EA5E9"/><ellipse cx="172" cy="132" rx="32" ry="7" fill="#0284C7"/><ellipse cx="172" cy="132" rx="26" ry="4.5" fill="#7DD3FC"/>
+    <path d="M142 132 Q172 92 202 132" stroke="#334155" stroke-width="3" fill="none"/>
+    <g transform="rotate(-14 236 196)"><rect x="216" y="184" width="40" height="26" rx="9" fill="#F59E0B"/>${[0,1,2,3].map(i => `<rect x="${218 + i * 9}" y="172" width="7" height="16" rx="3.5" fill="#F59E0B"/>`).join('')}</g>
+    ${[[278, 1], [322, 1.15], [364, .9]].map(([x, s]) => `<g transform="translate(${x} 0)">
+      <path d="M-15 186 L15 186 L11 216 L-11 216 Z" fill="#B45309"/><rect x="-17" y="180" width="34" height="8" rx="2" fill="#92400E"/>
+      <line x1="0" y1="180" x2="0" y2="${180 - 34 * s}" stroke="#15803D" stroke-width="3"/>
+      <path d="M0 ${168 - 10 * s} q-20 -6 -22 -22 q18 2 22 22" fill="#22C55E"/><path d="M0 ${158 - 14 * s} q20 -6 22 -22 q-18 2 -22 22" fill="#16A34A"/>
+    </g>`).join('')}
+    <g transform="translate(250 92)"><path d="M0 20 h46 l-6 34 h-34 z" fill="#059669"/><path d="M46 28 l26 -18" stroke="#059669" stroke-width="6" stroke-linecap="round"/><path d="M6 20 q17 -26 34 0" stroke="#047857" stroke-width="4" fill="none"/>
+      <g fill="#7DD3FC">${[0,1,2].map(i => `<circle cx="${78 + i * 4}" cy="${6 + i * 8}" r="2"/>`).join('')}</g></g>
+    <g fill="#F59E0B">${[[30, 60], [370, 40], [210, 30]].map(([x, y]) => `<path d="M${x} ${y - 7} l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z"/>`).join('')}</g>
+  </svg>`;
+  if (key === 'clean') return `<svg viewBox="0 0 400 240" class="w-full h-full" preserveAspectRatio="xMidYMid slice" role="img" aria-label="ساحة نظيفة ومزهرة">
+    <defs><linearGradient id="skC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#38BDF8"/><stop offset="1" stop-color="#E0F2FE"/></linearGradient></defs>
+    <rect width="400" height="240" fill="url(#skC)"/>
+    <circle cx="56" cy="44" r="22" fill="#FCD34D"/><circle cx="56" cy="44" r="32" fill="#FCD34D" opacity=".3"/>
+    <g fill="#fff"><ellipse cx="250" cy="34" rx="34" ry="10"/><ellipse cx="270" cy="28" rx="20" ry="10"/><ellipse cx="140" cy="50" rx="24" ry="7"/></g>
+    <rect x="30" y="70" width="340" height="92" fill="#FEFCE8"/><rect x="26" y="62" width="348" height="10" fill="#064E3B"/>
+    <g fill="#BAE6FD" stroke="#064E3B" stroke-width="2">${[50,110,250,310].map(x => `<rect x="${x}" y="98" width="38" height="30" rx="2"/>`).join('')}</g>
+    <rect x="180" y="104" width="40" height="58" fill="#064E3B"/><circle cx="212" cy="134" r="2.5" fill="#F59E0B"/>
+    <rect x="148" y="76" width="104" height="22" rx="4" fill="#D97706"/><text x="200" y="92" text-anchor="middle" font-family="Cairo, sans-serif" font-weight="800" font-size="13" fill="#fff">ساحتنا أجمل</text>
+    <rect y="160" width="400" height="80" fill="#4ADE80"/><path d="M0 160 h400 v6 h-400z" fill="#22C55E"/>
+    <path d="M180 162 L220 162 L250 240 L150 240 Z" fill="#F5F5F4"/>
+    ${[[340, 1], [44, .85]].map(([x, s]) => `<g><rect x="${x - 4}" y="${170 - 56 * s}" width="8" height="${56 * s}" fill="#78350F"/><circle cx="${x}" cy="${168 - 62 * s}" r="${26 * s}" fill="#15803D"/><circle cx="${x - 14 * s}" cy="${172 - 50 * s}" r="${16 * s}" fill="#16A34A"/><circle cx="${x + 14 * s}" cy="${172 - 50 * s}" r="${16 * s}" fill="#22C55E"/></g>`).join('')}
+    <g>${Array.from({ length: 16 }, (_, i) => { const x = 14 + i * 25 + (i % 2) * 6, y = 192 + (i % 3) * 14; if (x > 140 && x < 262) return ''; const c = ['#F43F5E', '#F59E0B', '#A855F7', '#FB7185', '#FACC15'][i % 5]; return `<line x1="${x}" y1="${y}" x2="${x}" y2="${y + 10}" stroke="#15803D" stroke-width="2"/><circle cx="${x}" cy="${y}" r="5" fill="${c}"/><circle cx="${x}" cy="${y}" r="2" fill="#FEF3C7"/>`; }).join('')}</g>
+    <g transform="translate(268 168)"><rect width="50" height="6" rx="2" fill="#92400E"/><rect x="0" y="-12" width="50" height="5" rx="2" fill="#92400E"/><rect x="4" y="6" width="4" height="12" fill="#78350F"/><rect x="42" y="6" width="4" height="12" fill="#78350F"/></g>
+    <g transform="translate(110 162)"><rect width="18" height="24" rx="3" fill="#064E3B"/><rect x="-2" y="-4" width="22" height="5" rx="2" fill="#065F46"/><path d="M5 10 l4 -4 4 4 M9 6 v10" stroke="#F59E0B" stroke-width="2" fill="none"/></g>
+  </svg>`;
+  return '';
+}
+function stageStory(v, p) {
+  const slides = v.story || [];
+  if (!slides.length) return `<div class="text-center py-16"><div class="text-5xl">📖</div><p class="mt-3 font-bold text-royal">لم تُضَف قصة لهذه القيمة بعد.</p>${navButtons(2, 'setStage(4)')}</div>`;
+  const i = Math.min(p.slide || 0, slides.length - 1), s = slides[i];
+  const tones = ['from-slate-200 to-stone-300', 'from-amber-100 to-amber-200', 'from-emerald-100 to-sky-100'];
+  const img = s.scene ? sceneSVG(s.scene) : s.image ? `<img src="${esc(s.image)}" alt="${esc(s.title)}" class="w-full h-full object-cover">` :
+    `<div class="w-full h-full bg-gradient-to-br ${tones[i % 3]} grid place-items-center relative overflow-hidden"><div class="absolute w-64 h-64 rounded-full bg-white/40 -top-16 -left-10"></div><div class="absolute w-40 h-40 rounded-full bg-white/30 bottom-0 right-6"></div><span class="relative text-[110px] sm:text-[140px] drop-shadow-xl">${s.emoji || '📖'}</span></div>`;
+  const labelColors = ['bg-slate-700', 'bg-gold', 'bg-emerald-700'];
+  return `<div class="fade-up">
+    <div class="text-center mb-6"><h2 class="text-2xl sm:text-3xl font-black text-royal">القصة التفاعلية المصوّرة</h2><p class="text-royal/60 mt-1">تابع أحداث القصة شريحةً بشريحة</p></div>
+    <article class="bg-white rounded-3xl overflow-hidden ring-1 ring-royal/10 shadow-xl max-w-2xl mx-auto">
+      <div class="relative aspect-[5/3] fade-in">${img}
+        <span class="absolute top-4 right-4 px-3 py-1 rounded-full ${labelColors[i % 3]} text-white text-sm font-extrabold shadow">${i + 1}. ${STORY_LABELS[i] || ''}</span></div>
+      <div class="p-5 sm:p-7 fade-up">
+        <h3 class="text-xl sm:text-2xl font-black text-royal">${esc(s.title)}</h3>
+        <p class="mt-3 text-lg leading-loose text-royal/80">${esc(s.text)}</p>
+      </div>
+      <div class="flex items-center justify-between px-5 sm:px-7 pb-6">
+        <button onclick="slideGo(${i - 1})" ${i === 0 ? 'disabled' : ''} class="px-4 py-2.5 rounded-xl bg-cream text-royal font-bold disabled:opacity-30">→ السابقة</button>
+        <div class="flex gap-1.5">${slides.map((_, j) => `<button onclick="slideGo(${j})" aria-label="شريحة ${j + 1}" class="h-2.5 rounded-full transition-all ${j === i ? 'w-7 bg-gold2' : 'w-2.5 bg-royal/20'}"></button>`).join('')}</div>
+        <button onclick="slideGo(${i + 1})" ${i === slides.length - 1 ? 'disabled' : ''} class="px-4 py-2.5 rounded-xl bg-royal text-cream font-bold disabled:opacity-30">التالية ←</button>
+      </div>
+    </article>
+    ${navButtons(2, 'nextStory()', 'لو كنت مكانهم...', (p.maxSlide || 0) >= slides.length - 1)}
+  </div>`;
+}
+function slideGo(j) {
+  const v = getValue(ui.valueId), p = getProg(v.id);
+  if (j < 0 || j >= v.story.length) return;
+  p.slide = j; p.maxSlide = Math.max(p.maxSlide || 0, j); save(); keepScroll(render);
+}
+function nextStory() {
+  const v = getValue(ui.valueId), p = getProg(v.id);
+  if (v.story && v.story.length && (p.maxSlide || 0) < v.story.length - 1) return toast('تابع القصة حتى الشريحة الأخيرة 📖');
+  setStage(4);
+}
+
+/* 5) سؤال المحاكاة */
+function stageSim(v, p) {
+  const s = v.simulation;
+  return `<div class="fade-up">
+    <div class="text-center mb-6"><div class="text-4xl mb-2">🤔</div><h2 class="text-2xl sm:text-3xl font-black text-royal leading-snug">${esc(s.question)}</h2><p class="text-royal/60 mt-1">يمكنك اختيار أكثر من إجابة</p></div>
+    <div class="grid sm:grid-cols-2 gap-3">
+      ${s.options.map((o, i) => `
+        <label class="opt cursor-pointer flex items-center gap-3 p-4 rounded-2xl bg-white border-2 border-royal/10 hover:border-gold2/60 transition">
+          <input type="checkbox" class="sr-only" ${p.sim.choices.includes(i) ? 'checked' : ''} onchange="toggleSim(${i}, this.checked)">
+          <span class="tick w-7 h-7 shrink-0 rounded-lg border-2 border-royal/25 grid place-items-center text-sm font-black text-transparent transition">✓</span>
+          <span class="font-bold text-royal leading-relaxed">${esc(o)}</span>
+        </label>`).join('')}
+    </div>
+    <div class="mt-6 bg-white rounded-3xl p-5 ring-1 ring-royal/10">
+      <label for="simNote" class="font-black text-royal flex flex-wrap items-center gap-2">💡 مبادرتي الشخصية <span class="text-xs font-semibold text-royal/50">(اختياري — ستظهر في الجدارية)</span></label>
+      <textarea id="simNote" rows="3" maxlength="200" oninput="getProg(ui.valueId).sim.note=this.value;save();document.getElementById('noteLen').textContent=this.value.length" placeholder="اكتب فكرة مبادرة تودّ تنفيذها..." class="mt-3 w-full rounded-2xl border-2 border-royal/10 focus:border-gold2 outline-none p-3 bg-cream/50 resize-none">${esc(p.sim.note)}</textarea>
+      <div class="text-left text-xs text-royal/40"><span id="noteLen">${p.sim.note.length}</span>/200</div>
+    </div>
+    ${navButtons(3, 'nextSim()', 'التالي', true)}
+  </div>`;
+}
+function toggleSim(i, on) {
+  const p = getProg(ui.valueId);
+  p.sim.choices = p.sim.choices.filter(x => x !== i); if (on) p.sim.choices.push(i); save();
+}
+function nextSim() { if (!getProg(ui.valueId).sim.choices.length) return toast('اختر إجابة واحدة على الأقل ☑️'); setStage(5); }
+
+/* 7) نهاية الرحلة وإصدار الجواز */
+function completeJourney() {
+  const v = getValue(ui.valueId), p = getProg(v.id), t = state.traveler;
+  let pp = myPassport(v.id);
+  if (!pp) {
+    const seq = state.passports.length + 1;
+    pp = { number: `${APP_DATA.flight.number}-${String(seq).padStart(4, '0')}`, ticket: t.ticket, name: t.name, valueId: v.id, date: Date.now(), note: (p.sim.note || '').trim(), family: null, onWall: true };
+    state.passports.push(pp);
+    ui.celebrate = true;
+  } else {
+    pp.note = (p.sim.note || '').trim() || pp.note;
+  }
+  p.done = true; setStage(6);
+}
+function stagePassport(v, p) {
+  const pp = myPassport(v.id);
+  if (!pp) return `<div class="text-center py-16"><p class="font-bold text-royal">لم يكتمل الجواز بعد.</p><button onclick="setStage(5)" class="gold-btn text-white font-bold px-6 py-3 rounded-2xl mt-4">العودة للتقييم</button></div>`;
+  const choices = p.sim.choices.map(i => v.simulation.options[i]).filter(Boolean);
+  const familyStamp = pp.family ? `
+    <div class="${ui.stampAnim ? 'stamp-in' : 'stamp'} w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-double border-emerald-700/80 text-emerald-800 grid place-items-center text-center bg-emerald-50/70 shrink-0">
+      <div><div class="text-xl">🏠</div><div class="text-[11px] font-black leading-tight">ختم الأسرة</div><div class="text-[10px] font-bold max-w-[80px] truncate mx-auto">${esc(pp.family.name)}</div></div></div>` : '';
+  return `<div class="fade-up">
+    <div class="text-center mb-6 no-print">
+      <div class="text-5xl mb-2">🎉</div>
+      <h2 class="text-3xl sm:text-4xl font-black text-royal">مبروك! وصلت إلى وجهتك</h2>
+      <p class="text-royal/60 mt-1">تم إصدار جواز القيمة الرسمي وإضافة اسمك إلى جدارية القيم</p>
+    </div>
+
+    <div id="printable" class="relative max-w-2xl mx-auto rounded-[28px] overflow-hidden shadow-[0_40px_80px_-30px_rgba(2,44,34,.7)] ring-2 ring-gold2/60">
+      <div class="bg-royal px-5 sm:px-6 py-4 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">${emblemSVG(46)}<div><div class="gold-text font-black text-lg sm:text-xl leading-tight">جواز القيمة الرسمي</div><div class="text-[10px] tracking-[.3em] text-amber-300/70" dir="ltr">VALUE PASSPORT</div></div></div>
+        <div class="text-left"><div class="text-[10px] text-amber-200/70">رقم الجواز</div><div class="font-black text-gold2 tracking-wider text-sm sm:text-base" dir="ltr">${esc(pp.number)}</div></div>
+      </div>
+      <div class="bg-cream guilloche p-5 sm:p-8">
+        <div class="flex flex-col sm:flex-row gap-6">
+          <div class="w-28 h-32 shrink-0 rounded-2xl grid place-items-center text-6xl ring-4 ring-white shadow-lg mx-auto sm:mx-0" style="background: linear-gradient(160deg, ${v.color}, #022C22)">${v.icon}</div>
+          <div class="flex-1 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <div class="col-span-2"><div class="text-[11px] text-royal/50 font-semibold">اسم حامل الجواز</div><div class="font-black text-royal text-xl sm:text-2xl">${esc(pp.name)}</div></div>
+            <div><div class="text-[11px] text-royal/50 font-semibold">القيمة المُنجزة</div><div class="font-extrabold" style="color:${v.color}">${esc(v.title)}</div></div>
+            <div><div class="text-[11px] text-royal/50 font-semibold">تاريخ الإصدار</div><div class="font-extrabold text-royal">${fmtDate(pp.date)}</div></div>
+            <div><div class="text-[11px] text-royal/50 font-semibold">جهة الإصدار</div><div class="font-extrabold text-royal">${esc(APP_DATA.school.name)}</div></div>
+            <div><div class="text-[11px] text-royal/50 font-semibold">رقم الرحلة</div><div class="font-extrabold text-royal" dir="ltr">${esc(APP_DATA.flight.number)}</div></div>
+          </div>
+        </div>
+        ${choices.length ? `<div class="mt-6 pt-5 border-t-2 border-dashed border-royal/15"><div class="text-[11px] text-royal/50 font-semibold mb-2">التزاماتي في هذه القيمة</div><ul class="space-y-1.5 text-sm font-semibold text-royal">${choices.map(c => `<li class="flex gap-2"><span class="text-gold">✦</span>${esc(c)}</li>`).join('')}</ul>${pp.note ? `<p class="mt-3 text-sm bg-white rounded-xl px-3 py-2 border-r-4 border-gold2">💡 ${esc(pp.note)}</p>` : ''}</div>` : ''}
+        <div class="mt-6 pt-5 border-t-2 border-dashed border-royal/15 flex items-end justify-between gap-4">
+          <div class="text-[11px] text-royal/60"><div class="font-semibold">توقيع ${esc(APP_DATA.supervisorTitle)}</div><div class="font-black text-royal text-sm mt-1 italic">${esc(APP_DATA.supervisors[0] || '')}</div></div>
+          <div class="flex items-end gap-3">
+            ${familyStamp}
+            <div class="stamp w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-double border-gold/70 text-gold grid place-items-center shrink-0"><div class="text-center text-[11px] font-black leading-tight">✈<br>تمّت<br>الرحلة</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-2xl mx-auto mt-6 bg-white rounded-3xl p-5 sm:p-6 ring-1 ring-royal/10 no-print">
+      ${pp.family ? `<div class="flex items-center gap-3"><span class="text-3xl">🏠</span><div><div class="font-black text-royal">تم ختم جوازك من الأسرة</div><div class="text-sm text-royal/60">شكراً لـ ${esc(pp.family.name)} على المشاركة 💚</div></div></div>` : `
+        <div class="font-black text-royal flex items-center gap-2">🏠 ختم الأسرة</div>
+        <p class="text-sm text-royal/60 mt-1">اعرض جوازك على أحد أفراد أسرتك، ثم يكتب اسمه ويضغط «اختم الجواز».</p>
+        <div class="flex flex-col sm:flex-row gap-3 mt-3">
+          <input id="famName" maxlength="40" placeholder="اسم ولي الأمر / فرد الأسرة" class="flex-1 rounded-2xl border-2 border-royal/10 focus:border-gold2 outline-none px-4 py-3 bg-cream/50" onkeydown="if(event.key==='Enter')addFamilyStamp()">
+          <button onclick="addFamilyStamp()" class="px-6 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold">اختم الجواز 🔏</button>
+        </div>`}
+    </div>
+
+    <div class="flex flex-wrap justify-center gap-3 mt-8 no-print">
+      <button onclick="ui.tab='wall';go('dashboard')" class="gold-btn text-white font-extrabold px-6 py-3.5 rounded-2xl">🖼️ شاهد الجدارية</button>
+      <button onclick="ui.tab='values';go('dashboard')" class="px-6 py-3.5 rounded-2xl bg-royal text-cream font-extrabold">🧭 قيمة جديدة</button>
+      <button onclick="window.print()" class="px-6 py-3.5 rounded-2xl border-2 border-royal/15 text-royal font-extrabold hover:bg-royal/5">🖨️ طباعة الجواز</button>
+      <button onclick="restartValue()" class="px-6 py-3.5 rounded-2xl text-royal/60 font-bold hover:text-royal">↺ إعادة الرحلة</button>
+    </div>
+  </div>`;
+}
+function addFamilyStamp() {
+  const name = document.getElementById('famName').value.replace(/\s+/g, ' ').trim();
+  if (name.length < 2) return toast('اكتب اسم فرد الأسرة أولاً ✍️');
+  const pp = myPassport(ui.valueId); if (!pp || pp.family) return;
+  pp.family = { name, date: Date.now() }; state.familyStamps++; save();
+  ui.stampAnim = true; keepScroll(render); ui.stampAnim = false;
+  toast('تم ختم الجواز من الأسرة 🏠✨');
+}
+function restartValue() {
+  if (!confirm('ستبدأ رحلة هذه القيمة من جديد (يبقى جوازك محفوظاً). متابعة؟')) return;
+  delete state.progress[pk(ui.valueId)]; getProg(ui.valueId); setStage(0);
+}
+
+/* ============================================================================
+   العرض
+   ============================================================================ */
+function animateCounts() {
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const to = +el.dataset.count, dur = 1200, t0 = performance.now();
+    if (!to) { el.textContent = '0'; return; }
+    const step = now => { const k = Math.min(1, (now - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+function celebrate() {
+  if (typeof confetti !== 'function') return;
+  const colors = ['#F59E0B', '#D97706', '#064E3B', '#10B981', '#FDE68A'];
+  confetti({ particleCount: 140, spread: 90, origin: { y: .6 }, colors });
+  setTimeout(() => confetti({ particleCount: 80, angle: 60, spread: 70, origin: { x: 0 }, colors }), 250);
+  setTimeout(() => confetti({ particleCount: 80, angle: 120, spread: 70, origin: { x: 1 }, colors }), 400);
+}
+function render() {
+  const app = document.getElementById('app');
+  if (!state.traveler && ui.screen !== 'landing') { ui.screen = 'landing'; ui.landing = 'passport'; }
+  if (ui.screen === 'landing') app.innerHTML = renderLanding();
+  else if (ui.screen === 'journey') app.innerHTML = renderJourney();
+  else app.innerHTML = renderDashboard();
+  animateCounts();
+  if (ui.celebrate) { ui.celebrate = false; setTimeout(celebrate, 250); }
+}
+// مزامنة تلقائية للأرقام والجدارية إذا فُتح التطبيق في أكثر من تبويب
+window.addEventListener('storage', e => {
+  if (e.key !== STORE_KEY) return;
+  const fresh = loadState();
+  state.passports = fresh.passports || []; state.familyStamps = fresh.familyStamps || 0;
+  if (ui.screen === 'dashboard') keepScroll(render);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+render();
+</script>
+</body>
+</html>
